@@ -1,0 +1,7 @@
+{
+  "name": "book-tracker",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "Ashyrov Nazar",
+  "license": "MIT"
+}
