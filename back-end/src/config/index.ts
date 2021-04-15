@@ -1,7 +1,11 @@
 import { SequelizeModule } from '@nestjs/sequelize';
 import { ConfigModule } from '@nestjs/config';
 
-const configModule = ConfigModule.forRoot({ envFilePath: '.env' });
+import { User } from 'src/users/users.model';
+
+const configModule = ConfigModule.forRoot({
+  envFilePath: `.${process.env.NODE_ENV}.env`,
+});
 
 const sequelizeDBConfig = SequelizeModule.forRoot({
   dialect: 'postgres',
@@ -10,8 +14,8 @@ const sequelizeDBConfig = SequelizeModule.forRoot({
   username: process.env.POSTGRES_USER,
   password: process.env.POSTGRES_PASSWORD,
   database: process.env.POSTGRES_DB,
-  models: [],
-  autoLoadModels: true, // создает таблицы на основании наших моделей
+  models: [User],
+  autoLoadModels: true, // дает возможность создания таблицы на основании наших моделей
 });
 
 export default [configModule, sequelizeDBConfig];
