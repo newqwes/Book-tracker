@@ -11,6 +11,26 @@ import { UsersService } from '../users/users.service';
 export class AuthService {
   constructor(private userService: UsersService, private jwtService: JwtService) {}
 
+  private async generateToken(user: User) {
+    const { email, id, roles } = user;
+
+    const token = this.jwtService.sign({ email, id, roles });
+
+    return { token };
+  }
+
+  private async validateUser(userDto: CreateUserDto) {
+    const user = await this.userService.getUserByEmail(userDto.email);
+
+    const passwordEquals = await bcrypt.compare(userDto.password, user.password);
+
+    if (user && passwordEquals) {
+      return user;
+    }
+
+    throw new UnauthorizedException({ message: 'Некорректный емайл или пароль' });
+  }
+
   async login(userDto: CreateUserDto) {
     const user = await this.validateUser(userDto);
 
@@ -28,25 +48,5 @@ export class AuthService {
     const user = await this.userService.createUser({ ...userDto, password: hashPassword });
 
     return this.generateToken(user);
-  }
-
-  private async generateToken(user: User) {
-    const payload = { email: user.email, id: user.id, roles: user.roles };
-
-    const token = this.jwtService.sign(payload);
-
-    return { token };
-  }
-
-  private async validateUser(userDto: CreateUserDto) {
-    const user = await this.userService.getUserByEmail(userDto.email);
-
-    const passwordEquals = await bcrypt.compare(userDto.password, user.password);
-
-    if (user && passwordEquals) {
-      return user;
-    }
-
-    throw new UnauthorizedException({ message: 'Некорректный емайл или пароль' });
   }
 }
