@@ -1,27 +1,51 @@
-import { UsersService } from './users.service';
-import { Controller, Post, Body, Get } from '@nestjs/common';
-import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import { CreateUserDto } from './dto/create-user.dto';
+import { AddRoleDto } from './dto/add-role.dto';
+import { BanUserDto } from './dto/ban-user.dto';
 
-import { User } from 'src/users/users.model';
+import { UsersService } from './users.service';
+import { User } from './users.model';
+import { Roles } from '../auth/roles-auth.decorator';
+import { RolesGuard } from '../auth/roles.guard';
 
-@ApiTags('Users')
+@ApiTags('Пользователи')
 @Controller('users')
 export class UsersController {
-  constructor(private userService: UsersService) {}
+  constructor(private usersService: UsersService) {}
 
-  @ApiOperation({ summary: 'Create user' })
-  @ApiOkResponse({ status: 200, type: User })
+  @ApiOperation({ summary: 'Создание пользователя' })
+  @ApiResponse({ status: 200, type: User })
   @Post()
   create(@Body() userDto: CreateUserDto) {
-    return this.userService.createUser(userDto);
+    return this.usersService.createUser(userDto);
   }
 
-  @ApiOperation({ summary: 'Get all users' })
-  @ApiOkResponse({ status: 200, type: [User] })
+  @ApiOperation({ summary: 'Получить всех пользователей' })
+  @ApiResponse({ status: 200, type: [User] })
+  @Roles('ADMIN')
+  @UseGuards(RolesGuard)
   @Get()
   getAll() {
-    return this.userService.getAllUsers();
+    return this.usersService.getAllUsers();
+  }
+
+  @ApiOperation({ summary: 'Выдать роль' })
+  @ApiResponse({ status: 200 })
+  @Roles('ADMIN')
+  @UseGuards(RolesGuard)
+  @Post('/role')
+  addRole(@Body() dto: AddRoleDto) {
+    return this.usersService.addRole(dto);
+  }
+
+  @ApiOperation({ summary: 'Забанить пользователя' })
+  @ApiResponse({ status: 200 })
+  @Roles('ADMIN')
+  @UseGuards(RolesGuard)
+  @Post('/ban')
+  ban(@Body() dto: BanUserDto) {
+    return this.usersService.ban(dto);
   }
 }
